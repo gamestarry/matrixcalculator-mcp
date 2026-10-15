@@ -8,10 +8,10 @@ Implemented tools:
 
 - `matrix_add` — add two matrices with identical dimensions and return exact results plus one calculation step per entry.
 - `matrix_subtract` — subtract two matrices with identical dimensions and return exact results plus one calculation step per entry.
+- `matrix_multiply` — multiply compatible matrices and return exact results plus row-by-column calculation steps.
 
 Planned next tools:
 
-- `matrix_multiply`
 - `matrix_determinant`
 - `matrix_inverse`
 - `matrix_transpose`

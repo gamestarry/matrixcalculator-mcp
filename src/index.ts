@@ -1,6 +1,7 @@
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { addMatricesWithSteps } from "./tools/matrix-add";
+import { multiplyMatricesWithSteps } from "./tools/matrix-multiply";
 import { subtractMatricesWithSteps } from "./tools/matrix-subtract";
 
 const matrixValueSchema = z.union([z.string(), z.number()]);
@@ -82,6 +83,34 @@ const handler = createMcpHandler(() => {
     }
   );
 
+  server.registerTool(
+    "matrix_multiply",
+    {
+      description:
+        "Multiply matrix A by matrix B when the number of columns of A equals the number of rows of B. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact results with row-by-column calculation steps.",
+      inputSchema: z.object({
+        matrixA: matrixSchema.describe("Left matrix A."),
+        matrixB: matrixSchema.describe("Right matrix B.")
+      })
+    },
+    async ({ matrixA, matrixB }) => {
+      try {
+        const result = multiplyMatricesWithSteps(matrixA, matrixB);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      } catch (error) {
+        return toolError(error, "Matrix multiplication failed.");
+      }
+    }
+  );
+
   return server;
 });
 
@@ -104,7 +133,7 @@ export default {
         version: "0.1.0",
         status: "ok",
         mcpEndpoint: "/mcp",
-        tools: ["matrix_add", "matrix_subtract"]
+        tools: ["matrix_add", "matrix_subtract", "matrix_multiply"]
       });
     }
 
