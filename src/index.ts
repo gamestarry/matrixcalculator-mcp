@@ -1,9 +1,24 @@
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { addMatricesWithSteps } from "./tools/matrix-add";
+import { subtractMatricesWithSteps } from "./tools/matrix-subtract";
 
 const matrixValueSchema = z.union([z.string(), z.number()]);
 const matrixSchema = z.array(z.array(matrixValueSchema).min(1)).min(1);
+
+function toolError(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : fallback;
+
+  return {
+    isError: true as const,
+    content: [
+      {
+        type: "text" as const,
+        text: message
+      }
+    ]
+  };
+}
 
 const handler = createMcpHandler(() => {
   const server = new McpServer({
@@ -34,18 +49,35 @@ const handler = createMcpHandler(() => {
           ]
         };
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Matrix addition failed.";
+        return toolError(error, "Matrix addition failed.");
+      }
+    }
+  );
+
+  server.registerTool(
+    "matrix_subtract",
+    {
+      description:
+        "Subtract the second matrix from the first matrix when both have identical dimensions. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact results with one calculation step per entry.",
+      inputSchema: z.object({
+        matrixA: matrixSchema.describe("Matrix to subtract from."),
+        matrixB: matrixSchema.describe("Matrix to subtract.")
+      })
+    },
+    async ({ matrixA, matrixB }) => {
+      try {
+        const result = subtractMatricesWithSteps(matrixA, matrixB);
 
         return {
-          isError: true,
           content: [
             {
               type: "text",
-              text: message
+              text: JSON.stringify(result, null, 2)
             }
           ]
         };
+      } catch (error) {
+        return toolError(error, "Matrix subtraction failed.");
       }
     }
   );
@@ -72,7 +104,7 @@ export default {
         version: "0.1.0",
         status: "ok",
         mcpEndpoint: "/mcp",
-        tools: ["matrix_add"]
+        tools: ["matrix_add", "matrix_subtract"]
       });
     }
 

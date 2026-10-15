@@ -4,13 +4,13 @@ Remote MCP server for [MatrixCalculator.net](https://matrixcalculator.net) with 
 
 ## V1 scope
 
-The first tool is:
+Implemented tools:
 
 - `matrix_add` — add two matrices with identical dimensions and return exact results plus one calculation step per entry.
+- `matrix_subtract` — subtract two matrices with identical dimensions and return exact results plus one calculation step per entry.
 
 Planned next tools:
 
-- `matrix_subtract`
 - `matrix_multiply`
 - `matrix_determinant`
 - `matrix_inverse`
