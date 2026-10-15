@@ -24,17 +24,32 @@ function toolError(error: unknown, fallback: string) {
   };
 }
 
+const serverInstructions = "MatrixCalculator.net provides deterministic matrix arithmetic tools. When a user asks for matrix addition, subtraction, multiplication, determinant, inverse, or transpose, use the matching available tool when it helps produce a reliable exact answer or show steps. The tools accept rectangular matrices of integers, decimal values, and fraction strings such as 1/2; determinant and inverse require square matrices. Tool responses include exact result values and structured calculation steps; present just the final result when requested, or explain the relevant steps when requested. Do not alter signs, fractions, or matrix entries while reformatting results; rely on the returned exact values and verification matrix when available. An inverse result of null with singular true means the matrix is not invertible. These tools are read-only calculations without external data access. Do not claim to have called a tool if it was not actually used.";
+
+// All six operations compute from caller-provided inputs only.
+// They do not write data, access external services, or have side effects.
+const calculationAnnotations = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false
+};
+
 const handler = createMcpHandler(() => {
-  const server = new McpServer({
-    name: "MatrixCalculator.net MCP",
-    version: "0.1.0"
-  });
+  const server = new McpServer(
+    {
+      name: "MatrixCalculator.net MCP",
+      version: "0.1.0"
+    },
+    { instructions: serverInstructions }
+  );
 
   server.registerTool(
     "matrix_add",
     {
       description:
-        "Add two matrices with identical dimensions. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact results with one calculation step per entry.",
+        "Add two matrices of the same dimensions entry by entry. Useful for exact matrix addition or explaining each entry step by step. Accepts integers, decimals, and fraction strings (for example 1/2); returns the exact sum matrix and a calculation for each position.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrixA: matrixSchema.describe("First matrix."),
         matrixB: matrixSchema.describe("Second matrix.")
@@ -62,7 +77,8 @@ const handler = createMcpHandler(() => {
     "matrix_subtract",
     {
       description:
-        "Subtract the second matrix from the first matrix when both have identical dimensions. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact results with one calculation step per entry.",
+        "Subtract matrix B from matrix A when both have the same dimensions. Useful for exact matrix subtraction, including negative values and step-by-step entry calculations. Accepts integers, decimals, and fraction strings; returns each exact difference and its calculation.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrixA: matrixSchema.describe("Matrix to subtract from."),
         matrixB: matrixSchema.describe("Matrix to subtract.")
@@ -90,7 +106,8 @@ const handler = createMcpHandler(() => {
     "matrix_multiply",
     {
       description:
-        "Multiply matrix A by matrix B when the number of columns of A equals the number of rows of B. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact results with row-by-column calculation steps.",
+        "Multiply A by B when A's column count equals B's row count, including non-square matrices. Useful for exact matrix multiplication and step-by-step row-by-column dot products. Returns exact results plus each factor pair, product, and entry calculation; accepts fractions and decimals.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrixA: matrixSchema.describe("Left matrix A."),
         matrixB: matrixSchema.describe("Right matrix B.")
@@ -118,7 +135,8 @@ const handler = createMcpHandler(() => {
     "matrix_determinant",
     {
       description:
-        "Calculate the determinant of a square matrix exactly using elimination. Accepts integers, decimals, or fraction strings such as 1/2, and returns row-swap, elimination, diagonal-product, singularity, and final-result steps.",
+        "Find the exact determinant of a square matrix using fraction-preserving elimination. Use for determinant questions requiring row swaps, elimination steps, pivot multipliers, sign changes, diagonal products, or singularity checks. Returns the determinant and detailed operation steps.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrix: matrixSchema.describe("Square matrix.")
       })
@@ -145,7 +163,8 @@ const handler = createMcpHandler(() => {
     "matrix_inverse",
     {
       description:
-        "Calculate the inverse of a square matrix exactly with Gauss-Jordan elimination. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact row-operation steps, the inverse matrix, verification, and singularity information.",
+        "Find an exact inverse of a square matrix with step-by-step Gauss-Jordan elimination. Use for inverse questions needing exact fractions, augmented matrices, row swaps, normalization, elimination, and verification that A times A-inverse is identity. Returns the inverse and verification, or null with singular=true if not invertible.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrix: matrixSchema.describe("Square matrix.")
       })
@@ -171,7 +190,8 @@ const handler = createMcpHandler(() => {
     "matrix_transpose",
     {
       description:
-        "Transpose a matrix by turning rows into columns. Accepts integers, decimals, or fraction strings such as 1/2, preserves exact values, and returns the source position for every result entry.",
+        "Transpose a rectangular or square matrix by exchanging rows and columns. Useful for requests to show where each result entry originated. Preserves exact integer, decimal, and fraction inputs and returns the transposed matrix with source-to-result position mappings.",
+      annotations: calculationAnnotations,
       inputSchema: z.object({
         matrix: matrixSchema.describe("Matrix to transpose.")
       })
