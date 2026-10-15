@@ -1,6 +1,7 @@
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { addMatricesWithSteps } from "./tools/matrix-add";
+import { determinantWithSteps } from "./tools/matrix-determinant";
 import { multiplyMatricesWithSteps } from "./tools/matrix-multiply";
 import { subtractMatricesWithSteps } from "./tools/matrix-subtract";
 
@@ -111,6 +112,33 @@ const handler = createMcpHandler(() => {
     }
   );
 
+  server.registerTool(
+    "matrix_determinant",
+    {
+      description:
+        "Calculate the determinant of a square matrix exactly using elimination. Accepts integers, decimals, or fraction strings such as 1/2, and returns row-swap, elimination, diagonal-product, singularity, and final-result steps.",
+      inputSchema: z.object({
+        matrix: matrixSchema.describe("Square matrix.")
+      })
+    },
+    async ({ matrix }) => {
+      try {
+        const result = determinantWithSteps(matrix);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      } catch (error) {
+        return toolError(error, "Determinant calculation failed.");
+      }
+    }
+  );
+
   return server;
 });
 
@@ -133,7 +161,12 @@ export default {
         version: "0.1.0",
         status: "ok",
         mcpEndpoint: "/mcp",
-        tools: ["matrix_add", "matrix_subtract", "matrix_multiply"]
+        tools: [
+          "matrix_add",
+          "matrix_subtract",
+          "matrix_multiply",
+          "matrix_determinant"
+        ]
       });
     }
 

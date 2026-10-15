@@ -9,10 +9,10 @@ Implemented tools:
 - `matrix_add` — add two matrices with identical dimensions and return exact results plus one calculation step per entry.
 - `matrix_subtract` — subtract two matrices with identical dimensions and return exact results plus one calculation step per entry.
 - `matrix_multiply` — multiply compatible matrices and return exact results plus row-by-column calculation steps.
+- `matrix_determinant` — calculate an exact determinant with row swaps, elimination steps, diagonal entries, and singularity information.
 
 Planned next tools:
 
-- `matrix_determinant`
 - `matrix_inverse`
 - `matrix_transpose`
 
