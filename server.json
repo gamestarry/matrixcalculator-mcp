@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.gamestarry/matrixcalculator-mcp",
   "title": "MatrixCalculator.net",
-  "description": "Exact matrix calculations with step-by-step results for addition, subtraction, multiplication, determinant, inverse, and transpose.",
+  "description": "Exact matrix calculations with step-by-step results for six core matrix operations.",
   "websiteUrl": "https://matrixcalculator.net",
   "repository": {
     "url": "https://github.com/gamestarry/matrixcalculator-mcp",
