@@ -5,6 +5,7 @@ import { determinantWithSteps } from "./tools/matrix-determinant";
 import { inverseWithSteps } from "./tools/matrix-inverse";
 import { multiplyMatricesWithSteps } from "./tools/matrix-multiply";
 import { subtractMatricesWithSteps } from "./tools/matrix-subtract";
+import { transposeWithSteps } from "./tools/matrix-transpose";
 
 const matrixValueSchema = z.union([z.string(), z.number()]);
 const matrixSchema = z.array(z.array(matrixValueSchema).min(1)).min(1);
@@ -166,6 +167,26 @@ const handler = createMcpHandler(() => {
       }
     }
   );
+  server.registerTool(
+    "matrix_transpose",
+    {
+      description:
+        "Transpose a matrix by turning rows into columns. Accepts integers, decimals, or fraction strings such as 1/2, preserves exact values, and returns the source position for every result entry.",
+      inputSchema: z.object({
+        matrix: matrixSchema.describe("Matrix to transpose.")
+      })
+    },
+    async ({ matrix }) => {
+      try {
+        const result = transposeWithSteps(matrix);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+        };
+      } catch (error) {
+        return toolError(error, "Matrix transpose failed.");
+      }
+    }
+  );
   return server;
 });
 
@@ -193,7 +214,8 @@ export default {
           "matrix_subtract",
           "matrix_multiply",
           "matrix_determinant",
-          "matrix_inverse"
+          "matrix_inverse",
+          "matrix_transpose"
         ]
       });
     }
