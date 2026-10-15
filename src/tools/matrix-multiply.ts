@@ -75,7 +75,7 @@ export function multiplyMatricesWithSteps(
         });
 
         calculationParts.push(
-          `${formatOperand(left)} × ${formatOperand(right)}`
+          `${formatOperand(left)} * ${formatOperand(right)}`
         );
       }
 
