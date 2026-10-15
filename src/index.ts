@@ -2,6 +2,7 @@ import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { addMatricesWithSteps } from "./tools/matrix-add";
 import { determinantWithSteps } from "./tools/matrix-determinant";
+import { inverseWithSteps } from "./tools/matrix-inverse";
 import { multiplyMatricesWithSteps } from "./tools/matrix-multiply";
 import { subtractMatricesWithSteps } from "./tools/matrix-subtract";
 
@@ -139,6 +140,32 @@ const handler = createMcpHandler(() => {
     }
   );
 
+  server.registerTool(
+    "matrix_inverse",
+    {
+      description:
+        "Calculate the inverse of a square matrix exactly with Gauss-Jordan elimination. Accepts integers, decimals, or fraction strings such as 1/2, and returns exact row-operation steps, the inverse matrix, verification, and singularity information.",
+      inputSchema: z.object({
+        matrix: matrixSchema.describe("Square matrix.")
+      })
+    },
+    async ({ matrix }) => {
+      try {
+        const result = inverseWithSteps(matrix);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2)
+            }
+          ]
+        };
+      } catch (error) {
+        return toolError(error, "Matrix inverse calculation failed.");
+      }
+    }
+  );
   return server;
 });
 
@@ -165,7 +192,8 @@ export default {
           "matrix_add",
           "matrix_subtract",
           "matrix_multiply",
-          "matrix_determinant"
+          "matrix_determinant",
+          "matrix_inverse"
         ]
       });
     }
