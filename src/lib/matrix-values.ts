@@ -44,7 +44,7 @@ export function parseMatrix(
 export function fractionToString(value: FractionValue): string {
   const numerator = value.s * value.n;
 
-  if (value.d === 1) {
+  if (value.d === 1n) {
     return String(numerator);
   }
 
